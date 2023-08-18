@@ -1,0 +1,42 @@
+* Overview
+
+AIM:
+1. Recreate a PHYSICAL slipbox, card and scrap paper system to mimic how mind would work (skeumorphism)
+2. Memory of physical location (canonical ordering) and physical state of cards (plaintext format only)
+
+Workflow:
+1. Open a workspace file (.json)
+2. Work in workspace
+3. Save to workspace file (.json) - default to overwrite original filename
+
+Work in workspace workflow:
+1. Create a card on canvas panel by clicking empty space
+2. Drag a card around the canvas
+3. Auto-arrange cards in grid (2 x 3 grid)
+4. Mark card (with a single coloured dot - 1 of 10 choices: white, grey, black, red, orange, yellow, green, blue, indigo, violet)
+5. Save workspace view under name
+6. Archive card
+7. Return card to slipbox
+
+Work on scrap paper workflow: (main thing is to export to cards)
+1. Type on scrap paper
+2. Archive scrap paper
+
+Work in slipbox workflow:
+1. Sort by creation date (canonical)
+2. Sort by modified date
+3. Sort by colour (ordered by most recent) - black, grey, white, then ROYGBIV
+4. Filter by colours
+5. Fuzzy search bar
+6. Open saved view
+7. Delete saved view
+
+Archive workflow:
+1. View archive as grid
+2. Fuzzy search archive
+3. Restore cards (but you can't restore scrap paper)
+
+* Roadmap
+
+Key features:
+- [ ]
