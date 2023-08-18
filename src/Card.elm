@@ -27,6 +27,14 @@ type alias OnDesk =
     , zIndex : Float
     }
 
+newOnDesk created position =
+    { created = created
+    , previousModified = created
+    , content = ""
+    , colour = Colour.White
+    , position = position
+    , zIndex = 0.0}
+
 encodeInSlipbox : InSlipbox -> Encode.Value
 encodeInSlipbox card =
     Encode.object
@@ -63,3 +71,19 @@ decoderOnDesk =
         (Decode.field "colour" Colour.decoder)
         (Decode.field "position" Position.decoder)
         (Decode.field "zIndex" Decode.float)
+
+withContent content card = { card | content = content }
+
+
+withZIndex z card = { card | zIndex = z }
+
+
+withPosition position card = { card | position = position }
+
+toSlipbox card modified =
+    { created = card.created
+    , modified = modified
+    , content = card.content
+    , colour = card.colour }
+
+matches card1 card2 = card1.created == card2.created

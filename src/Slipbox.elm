@@ -96,3 +96,6 @@ default =
     , colourFilter = Set.empty
     , arrangements =  []
     }
+
+withCard card now slipbox =
+    { slipbox | cards = (Card.toSlipbox card now) :: slipbox.cards }

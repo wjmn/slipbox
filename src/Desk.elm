@@ -17,3 +17,23 @@ decoder =
 
 default =
     { cards = [] }
+
+withNewCard card desk =
+    let
+        maxZ =
+            List.map .zIndex desk.cards
+            |> List.maximum
+            |> Maybe.withDefault 0
+    in
+    { desk | cards = (Card.withZIndex (maxZ + 1) card) :: desk.cards }
+
+withoutCard card desk =
+    let
+        calibrateZ oldCard =
+            if oldCard.zIndex > card.zIndex then
+                { oldCard | zIndex = oldCard.zIndex - 1 }
+            else
+                oldCard
+    in
+    { desk | cards =
+          List.filter (\c -> c.created /= card.created) desk.cards |> List.map calibrateZ}
