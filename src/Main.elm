@@ -17,6 +17,8 @@ import Slipbox
 import Task
 import Time exposing (Posix)
 import Workspace exposing (..)
+import Random
+import Time exposing (posixToMillis)
 
 
 
@@ -74,6 +76,14 @@ decoderMouseDown msg =
             (Decode.at [ "button" ] Decode.int)
         )
 
+generatorCentrePoint bounds =
+    let
+        midCardWidth = cardWidth / 2
+        midCardHeight = cardHeight / 2
+    in
+    Random.map2 Position
+        (Random.float (midCardWidth) (bounds.width - midCardWidth))
+        (Random.float (midCardHeight) (bounds.height - midCardHeight))
 
 type alias MouseInfo =
     { button : Int }
@@ -132,6 +142,8 @@ type Msg
     | MoveCardToSlipbox Card.OnDesk Posix
     | MouseDownCard Position Card.OnDesk MouseInfo
     | MouseUpCard Position Card.OnDesk
+    | ClickedSlipboxCard Card.InSlipbox
+    | GotRandomPosition Card.InSlipbox Float Position
     | NoOp
 
 
@@ -390,7 +402,7 @@ update msg model =
                                 |> withCmd (Task.perform (MoveCardToSlipbox card) Time.now)
 
                         else if mouseDownInfo.button == 0 then
-                            if Position.distance mouseDownInfo.position position < 10 then
+                            if Position.distance mouseDownInfo.position position < 4 then
                                 model
                                     |> withDraggingCard Nothing
                                     |> withEditingCard (Just card)
@@ -410,6 +422,25 @@ update msg model =
 
                 _ ->
                     model |> withCmd Cmd.none
+
+        ClickedSlipboxCard card ->
+            case (.workspace >> .desk |> fromMain model, .deskBoundingRect |> fromMain model) of
+                (Just desk, Just bounds) ->
+                    let maxZ =
+                            List.map .zIndex desk.cards
+                            |> List.maximum
+                            |> Maybe.withDefault 0
+                    in
+                        model
+                            |> withCmd (Random.generate (GotRandomPosition card maxZ) (generatorCentrePoint bounds))
+                _ ->
+                    model |> withCmd Cmd.none
+
+        GotRandomPosition card maxZ position ->
+            Workspace.modifyDesk (Desk.withNewCard <| Card.toDesk card position maxZ)
+            >> Workspace.modifySlipbox (Slipbox.withoutCard card)
+                |> inWorkspaceOf model
+                |> withCmd Cmd.none
 
         NoOp ->
             model
@@ -505,6 +536,7 @@ viewCardsOnDesk data =
         (viewDragging :: viewEditing :: List.map viewCard data.workspace.desk.cards)
 
 
+viewSlipboxCards : DataMain -> Html Msg
 viewSlipboxCards data =
     let
         styleCardWidth =
@@ -518,13 +550,17 @@ viewSlipboxCards data =
                 [ class "card in-slipbox"
                 , styleCardWidth
                 , styleCardHeight
+                , onClick (ClickedSlipboxCard card)
                 ]
                 [ div [ class "coloured-corner" ] []
                 , div [ class "card-content" ] [ text card.content ]
                 ]
+
+        orderedCards =
+            List.sortBy (.created >> posixToMillis) data.workspace.slipbox.cards
     in
     div [ class "slipbox-cards" ]
-        (List.map viewCard data.workspace.slipbox.cards)
+        (List.map viewCard orderedCards)
 
 
 viewMainLeft data =

@@ -86,4 +86,12 @@ toSlipbox card modified =
     , content = card.content
     , colour = card.colour }
 
+toDesk card position zIndex =
+    { created = card.created
+    , previousModified = card.modified
+    , content = card.content
+    , colour = card.colour
+    , position = position
+    , zIndex = zIndex }
+
 matches card1 card2 = card1.created == card2.created

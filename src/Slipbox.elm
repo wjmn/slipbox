@@ -99,3 +99,7 @@ default =
 
 withCard card now slipbox =
     { slipbox | cards = (Card.toSlipbox card now) :: slipbox.cards }
+
+withoutCard card slipbox =
+    { slipbox | cards =
+          List.filter (\c -> c.created /= card.created) slipbox.cards }

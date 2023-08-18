@@ -86,6 +86,10 @@ top: 0;
 left: 0;
 }
 
+#desk {
+height: 100vh;
+}
+
 .card {
 background: white;
 border: 1px solid black;
