@@ -1,5 +1,7 @@
 module Main exposing (..)
 
+import Archive
+import Archived
 import Browser
 import Browser.Dom as Dom
 import Card
@@ -12,13 +14,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Decode
 import Position exposing (Position)
-import Scrap
+import Random
+import Scrap exposing (Scrap)
 import Slipbox
 import Task
-import Time exposing (Posix)
+import Time exposing (Posix, posixToMillis)
 import Workspace exposing (..)
-import Random
-import Time exposing (posixToMillis)
 
 
 
@@ -37,9 +38,16 @@ editingCardId =
     "current-editing-card-textarea"
 
 
+clipPosition bounds { x, y } =
+    { x = Basics.min (Basics.max x (cardWidth / 2)) (bounds.width - cardWidth / 2)
+    , y = Basics.min (Basics.max y (cardHeight / 2)) (bounds.height - cardHeight / 2)
+    }
+
+
 type Model
     = StateStartupNoTimestampYet
     | StateMain DataMain
+    | StateArchive DataMain DataArchive
 
 
 type Error
@@ -76,14 +84,28 @@ decoderMouseDown msg =
             (Decode.at [ "button" ] Decode.int)
         )
 
+decoderScrapClick msg =
+    (Decode.at ["button"] Decode.int)
+        |> Decode.map (\x -> if x == 1 then (msg, True) else (NoOp, False))
+
+decoderClickedArchived msg =
+    (Decode.at ["button"] Decode.int)
+        |> Decode.map (\x -> if x == 1 then (msg, True) else (NoOp, False))
+
+
+
 generatorCentrePoint bounds =
     let
-        midCardWidth = cardWidth / 2
-        midCardHeight = cardHeight / 2
+        midCardWidth =
+            cardWidth / 2
+
+        midCardHeight =
+            cardHeight / 2
     in
     Random.map2 Position
-        (Random.float (midCardWidth) (bounds.width - midCardWidth))
-        (Random.float (midCardHeight) (bounds.height - midCardHeight))
+        (Random.float midCardWidth (bounds.width - midCardWidth))
+        (Random.float midCardHeight (bounds.height - midCardHeight))
+
 
 type alias MouseInfo =
     { button : Int }
@@ -102,6 +124,10 @@ type alias DataMain =
     }
 
 
+type alias DataArchive =
+    { search : String }
+
+
 makeInitialState posix =
     StateMain
         { workspace = Workspace.default posix
@@ -114,6 +140,10 @@ makeInitialState posix =
         , currentDraggingCard = Nothing
         , deskBoundingRect = { x = 0, y = 0, width = 0, height = 0 }
         }
+
+
+defaultDataArchive =
+    { search = "" }
 
 
 init : ( Model, Cmd Msg )
@@ -135,15 +165,22 @@ type Msg
     | FileSelected File
     | FileRead String String
     | OnDeskMouseMove { desk : Position, card : Position }
+    | OnDeskMouseLeave
     | ClickedDesk Position
     | CreateCardWithTimestamp Position Posix
     | ChangedEditingCardContent String
     | ClickedOutsideEditingCard Bool
     | MoveCardToSlipbox Card.OnDesk Posix
+    | MoveCardToArchive Card.OnDesk Posix
     | MouseDownCard Position Card.OnDesk MouseInfo
     | MouseUpCard Position Card.OnDesk
     | ClickedSlipboxCard Card.InSlipbox
     | GotRandomPosition Card.InSlipbox Float Position
+    | ClickedViewArchive
+    | ClickedViewMain
+    | ClickedArchiveScrap Scrap
+    | MoveScrapToArchive Scrap Posix
+    | ClickedCardInArchive Card.InSlipbox
     | NoOp
 
 
@@ -158,6 +195,9 @@ inMain model f =
         StateMain data ->
             StateMain (f data)
 
+        StateArchive data a ->
+            StateArchive (f data) a
+
         _ ->
             model
 
@@ -166,6 +206,9 @@ fromMain : Model -> (DataMain -> a) -> Maybe a
 fromMain model f =
     case model of
         StateMain data ->
+            Just (f data)
+
+        StateArchive data _ ->
             Just (f data)
 
         _ ->
@@ -318,10 +361,10 @@ update msg model =
         OnDeskMouseMove position ->
             let
                 modelDragged =
-                    case .currentDraggingCard |> fromMain model of
-                        Just (Just { card, centreOffset }) ->
+                    case ( .currentDraggingCard |> fromMain model, .deskBoundingRect |> fromMain model ) of
+                        ( Just (Just { card, centreOffset }), Just bounds ) ->
                             model
-                                |> modifyDraggingCard (\c -> { c | card = Card.withPosition (Position.minus position.desk centreOffset) c.card })
+                                |> modifyDraggingCard (\c -> { c | card = Card.withPosition (clipPosition bounds <| Position.minus position.desk centreOffset) c.card })
 
                         _ ->
                             model
@@ -330,6 +373,18 @@ update msg model =
                 |> withDeskPosition position.desk
                 |> withCardPosition position.card
                 |> withCmd Cmd.none
+
+        OnDeskMouseLeave ->
+            case .currentDraggingCard |> fromMain model of
+                Just (Just { card }) ->
+                    Workspace.modifyDesk (Desk.withNewCard card)
+                        |> inWorkspaceOf model
+                        |> withDraggingCard Nothing
+                        |> withCmd Cmd.none
+
+                _ ->
+                    model
+                        |> withCmd Cmd.none
 
         ClickedDesk position ->
             model
@@ -366,8 +421,13 @@ update msg model =
                         |> withCmd Cmd.none
 
         MoveCardToSlipbox card now ->
-            Workspace.modifyDesk (Desk.withoutCard card)
-                >> Workspace.modifySlipbox (Slipbox.withCard card now)
+            Workspace.modifySlipbox (Slipbox.withCard card now)
+                |> inWorkspaceOf model
+                |> withDraggingCard Nothing
+                |> withCmd Cmd.none
+
+        MoveCardToArchive card now ->
+            Workspace.modifyArchive (Archive.withCard card now)
                 |> inWorkspaceOf model
                 |> withDraggingCard Nothing
                 |> withCmd Cmd.none
@@ -401,6 +461,10 @@ update msg model =
                             model
                                 |> withCmd (Task.perform (MoveCardToSlipbox card) Time.now)
 
+                        else if mouseDownInfo.button == 1 then
+                            model
+                                |> withCmd (Task.perform (MoveCardToArchive card) Time.now)
+
                         else if mouseDownInfo.button == 0 then
                             if Position.distance mouseDownInfo.position position < 4 then
                                 model
@@ -424,21 +488,61 @@ update msg model =
                     model |> withCmd Cmd.none
 
         ClickedSlipboxCard card ->
-            case (.workspace >> .desk |> fromMain model, .deskBoundingRect |> fromMain model) of
-                (Just desk, Just bounds) ->
-                    let maxZ =
+            case ( .workspace >> .desk |> fromMain model, .deskBoundingRect |> fromMain model ) of
+                ( Just desk, Just bounds ) ->
+                    let
+                        maxZ =
                             List.map .zIndex desk.cards
-                            |> List.maximum
-                            |> Maybe.withDefault 0
+                                |> List.maximum
+                                |> Maybe.withDefault 0
                     in
-                        model
-                            |> withCmd (Random.generate (GotRandomPosition card maxZ) (generatorCentrePoint bounds))
+                    model
+                        |> withCmd (Random.generate (GotRandomPosition card maxZ) (generatorCentrePoint bounds))
+
                 _ ->
                     model |> withCmd Cmd.none
 
         GotRandomPosition card maxZ position ->
             Workspace.modifyDesk (Desk.withNewCard <| Card.toDesk card position maxZ)
-            >> Workspace.modifySlipbox (Slipbox.withoutCard card)
+                >> Workspace.modifySlipbox (Slipbox.withoutCard card)
+                |> inWorkspaceOf model
+                |> withCmd Cmd.none
+
+        ClickedViewArchive ->
+            case model of
+                StateMain data ->
+                    StateArchive data defaultDataArchive
+                        |> withCmd Cmd.none
+
+                _ ->
+                    model
+                        |> withCmd Cmd.none
+
+        ClickedViewMain ->
+            case model of
+                StateArchive data _ ->
+                    StateMain data
+                        |> withCmd Cmd.none
+
+                _ ->
+                    model
+                        |> withCmd Cmd.none
+
+        ClickedArchiveScrap scrap ->
+            model
+                |> withCmd (Task.perform (MoveScrapToArchive scrap) Time.now)
+
+        MoveScrapToArchive scrap now ->
+            (Workspace.modifyArchive (Archive.withScrap scrap now)
+                >> Workspace.modifyScrap (\_ -> Scrap.default now)
+            )
+                |> inWorkspaceOf model
+                |> withDraggingCard Nothing
+                |> withCmd Cmd.none
+
+        ClickedCardInArchive card ->
+            Workspace.modifySlipbox (Slipbox.withCard card card.modified)
+            >> Workspace.modifyArchive (Archive.withoutCard card)
                 |> inWorkspaceOf model
                 |> withCmd Cmd.none
 
@@ -480,7 +584,6 @@ viewCardsOnDesk data =
                 , styleCardHeight
                 , style "z-index" (String.fromFloat card.zIndex)
 
-                --, on "click" (Decode.map ClickedOutsideEditingCard decoderClickedContainer)
                 , preventDefaultOn "mousedown" (decoderMouseDown (MouseDownCard data.deskPosition card) |> Decode.map (\x -> ( x, True )))
                 ]
                 [ div [ class "coloured-corner" ] []
@@ -545,11 +648,15 @@ viewSlipboxCards data =
         styleCardHeight =
             style "height" <| String.fromFloat cardHeight ++ "px"
 
-        viewCard card =
+        styleCardTop index =
+            style "top" <| String.fromInt (40 * index) ++ "px"
+
+        viewCard index card =
             div
                 [ class "card in-slipbox"
                 , styleCardWidth
                 , styleCardHeight
+                , styleCardTop index
                 , onClick (ClickedSlipboxCard card)
                 ]
                 [ div [ class "coloured-corner" ] []
@@ -560,7 +667,7 @@ viewSlipboxCards data =
             List.sortBy (.created >> posixToMillis) data.workspace.slipbox.cards
     in
     div [ class "slipbox-cards" ]
-        (List.map viewCard orderedCards)
+        (List.indexedMap viewCard orderedCards)
 
 
 viewMainLeft data =
@@ -569,8 +676,8 @@ viewMainLeft data =
         ]
         [ div [ class "top-bar workspace-details" ]
             [ input [ class "filename-input", type_ "text", onInput ChangedFilename, value data.filename ] []
-            , button [ class "open-workspace-button", onClick ClickedOpenWorkspace ] [ text "📂" ]
-            , button [ class "save-workspace-button", onClick ClickedSaveWorkspace ] [ text "💾" ]
+            , button [ class "open-workspace-button", onClick ClickedOpenWorkspace ] [ text "Open" ]
+            , button [ class "save-workspace-button", onClick ClickedSaveWorkspace ] [ text "Save as" ]
             ]
         , div [ class "middle-bar" ] []
         , div [ class "slipbox-container" ]
@@ -582,11 +689,14 @@ viewMainMiddle data =
     div
         [ class "panel-container"
         ]
-        [ div [ class "top-bar" ] []
-        , div [ class "scrap-container" ]
+        [ div [ class "top-bar" ]
+            [ button [ onClick ClickedViewArchive ] [ text "View Archive" ] ]
+        , div [ class "scrap-container"
+              ]
             [ textarea
                 [ class "scrap"
                 , onInput ChangedScrapContent
+                , preventDefaultOn "mouseup" (decoderScrapClick (ClickedArchiveScrap data.workspace.scrap))
                 , value data.workspace.scrap.content
                 ]
                 []
@@ -599,17 +709,48 @@ viewMainRight data =
     div
         [ class "panel-container"
         , id "desk"
+        , preventDefaultOn "contextmenu" (Decode.succeed ( NoOp, True ))
         , preventDefaultOn "mousemove" (Decode.map OnDeskMouseMove (decoderMouseMove data.deskBoundingRect) |> Decode.map (\x -> ( x, True )))
+        , onMouseLeave OnDeskMouseLeave
         ]
         [ div [ class "floating-bar" ] []
         , div
             [ class "desk"
             , onClick (ClickedDesk data.deskPosition)
-            , preventDefaultOn "contextmenu" (Decode.succeed ( NoOp, True ))
+            , preventDefaultOn "mousedown" (Decode.succeed ( NoOp, True ))
             ]
             []
         , viewCardsOnDesk data
         ]
+
+
+viewArchive : DataMain -> DataArchive -> Html Msg
+viewArchive data a =
+    let
+        styleCardWidth =
+            style "width" <| String.fromFloat cardWidth ++ "px"
+
+        styleCardHeight =
+            style "height" <| String.fromFloat cardHeight ++ "px"
+
+        viewArchiveItem item =
+            case item.item of
+                Archived.Card card ->
+                    div
+                        [ class "archived card"
+                        , styleCardWidth
+                        , styleCardHeight
+                        , preventDefaultOn "mouseup" (decoderClickedArchived (ClickedCardInArchive card))
+                        ]
+                        [ div [ class "card-content" ] [ text card.content ] ]
+
+                Archived.Scrap scrap ->
+                    div [ class "archived scrap" ]
+                        [ div [] [ text scrap.content ] ]
+    in
+    div
+        [ class "archive-grid" ]
+        (List.map viewArchiveItem data.workspace.archive.items)
 
 
 viewCase : Model -> Html Msg
@@ -622,7 +763,7 @@ viewCase model =
             div [ class "main-workspace" ]
                 [ div
                     [ class "left main-panel"
-                    , on "click" (Decode.map ClickedOutsideEditingCard decoderClickedContainer)
+                    , on "mousedown" (Decode.map ClickedOutsideEditingCard decoderClickedContainer)
                     ]
                     [ viewMainLeft data ]
                 , div
@@ -631,6 +772,13 @@ viewCase model =
                     ]
                     [ viewMainMiddle data ]
                 , div [ class "right main-panel" ] [ viewMainRight data ]
+                ]
+
+        StateArchive data a ->
+            div [ class "archive-view" ]
+                [ div [ class "top-bar" ]
+                    [ button [ onClick ClickedViewMain ] [ text "View Main" ] ]
+                , div [ class "archive-grid-container" ] [ viewArchive data a ]
                 ]
 
 

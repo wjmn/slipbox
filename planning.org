@@ -5,9 +5,10 @@ AIM:
 2. Memory of physical location (canonical ordering) and physical state of cards (plaintext format only)
 
 Workflow:
-1. Open a workspace file (.json)
+1. Open a workspace file (.json) or URL with workspace file in URL
 2. Work in workspace
 3. Save to workspace file (.json) - default to overwrite original filename
+4. Warn if will exit app before saving
 
 Work in workspace workflow:
 1. Create a card on canvas panel by clicking empty space
@@ -28,13 +29,24 @@ Work in slipbox workflow:
 3. Sort by colour (ordered by most recent) - black, grey, white, then ROYGBIV
 4. Filter by colours
 5. Fuzzy search bar
-6. Open saved view
-7. Delete saved view
+6. Open, rearrange and delete saved views
 
 Archive workflow:
 1. View archive as grid
 2. Fuzzy search archive
 3. Restore cards (but you can't restore scrap paper)
+
+
+Use really lightweight syntax. Just use human readable plain text as much as possible.
+
+The first sentence of a card is always bolded automatically as the "title".
+
+If width < certain threshold:
+- Put slipbox hidden away in an overlaid side menu you can open and close on the left side
+- Auto grid puts cards in a 1-column view instead of two column-view
+
+Width of the cards should be scaled as a percentage of the canvas view width.
+
 
 * Roadmap
 

@@ -11,6 +11,20 @@
 
 * {
   box-sizing: border-box;
+  font-family: Iosevka, monospace;
+}
+
+button {
+  box-sizing: border-box;
+  background: inherit;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 0.5rem;
+}
+
+button:hover {
+  background: #fde047;
 }
 
 body {
@@ -23,62 +37,69 @@ overflow: hidden;
 
 .main-workspace {
 display: flex;
+background: #78716c;
 }
 
 .main-panel {
-border: black;
 height: 100vh;
 }
 
 .main-panel.left {
 width: 20%;
-background: red;
+border-right: 1px solid #292524;
 }
 
 .main-panel.middle {
 width: 40%;
-background: green;
 }
 
 .main-panel.right {
 width: 40%;
-background: blue;
 position: relative;
 overflow: hidden;
+border-left: 1px solid #292524;
 }
 
-.main-panel.middle .panel-container {
+.panel-container {
 display: flex;
 flex-direction: column;
 height: 100%;
+position: relative;
 }
 
 .top-bar {
-height: 4rem;
+height: 1.5rem;
 display: flex;
+background: #ecfeff;
 }
 
 .filename-input {
-flex: 1;
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-weight: bold;
 }
 
 .scrap-container {
-padding: 2rem;
-background: orange;
 flex: 1;
 display: flex;
 flex-direction: column;
 }
 
 .scrap {
-background: white;
-flex: 1;
-width: 100%;
-height: 100%;
+  border: none;
+  font-size: 10pt;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  padding: 1rem;
+  outline: none;
+  white-space: pre-wrap
 }
 
 .desk {
-background: yellow;
 width: 100%;
 height: 100vh;
 position: absolute;
@@ -90,21 +111,159 @@ left: 0;
 height: 100vh;
 }
 
+.scrap {
+  background: #fffbeb;
+  font-size: 11pt;
+}
+
+.card, #current-editing-card-textarea {
+  white-space: pre-wrap;
+  font-size: 10pt;
+  line-height: 1.2;
+  background: #fffbeb;
+  border: 1px solid #a5f3fc;
+  overflow: hidden;
+}
+
 .card {
-background: white;
-border: 1px solid black;
+  background: #fffbeb;
+  cursor: normal;
+  cursor: default;
+}
+
+.card-content, #current-editing-card-textarea {
+  color: #1c1917;
+  padding: 0.7rem;
+}
+
+.card .card-content::first-line {
+  font-weight: bold;
+  color: black;
 }
 
 .card.on-desk {
 position: absolute;
 }
 
+.card.on-desk.editing {
+  outline: 2px solid #06b6d4;
+}
+
 #current-editing-card-textarea {
 width: 100%;
 height: 100%;
+border: 0;
+resize: none;
+outline: none;
 }
 
+
+#current-editing-card-textarea::first-line {
+  font-weight: bold;
+  color: black;
+}
+
+.slipbox-container {
+  height: 100%;
+  overflow-y: auto;
+  width: 360px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.slipbox-cards {
+  position: relative;
+  height: 100%;
+}
 
 .card.in-slipbox {
-margin-bottom: -200px;
+  position: absolute;
+  box-shadow: 0 0 2px 0px #155e75;
 }
+
+.archive-view {
+  background: #44403c;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  align-items: stretch;
+  padding-bottom: 1rem;
+}
+
+.archive-grid-container {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  padding: 1rem;
+}
+
+.archive-grid {
+  flex: 1;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  grid-gap: 0.5rem;
+  grid-auto-flow: row dense;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.archived {
+  margin: 0.5rem;
+}
+
+.archived.scrap {
+  width: 320px;
+  height: 240px;
+  background: #f5f5f4;
+  font-size: 7pt;
+  overflow: auto;
+}
+
+.archived.scrap:hover {
+  width: 100%;
+  height: 100%;
+  font-size: 9pt;
+  grid-column: auto / span 2;
+  grid-row: auto / span 2;
+}
+
+
+
+
+/* DEVELOPMENT STYLES FOR EASE OF VISUALISATION */
+/*
+.card {
+background: white;
+border: 1px solid black;
+}
+
+.desk {
+background: yellow;
+}
+
+.scrap {
+background: white;
+}
+
+.scrap-container {
+background: orange;
+}
+
+.main-panel.right {
+background: blue;
+}
+
+.main-panel.middle {
+background: green;
+}
+
+.main-panel.left {
+background: red;
+}
+
+.main-panel {
+border: black;
+}
+
+*/

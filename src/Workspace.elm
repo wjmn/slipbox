@@ -1,6 +1,6 @@
 module Workspace exposing (..)
 
-import Archived exposing (Archived)
+import Archive exposing (Archive)
 import Desk exposing (Desk)
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -12,7 +12,7 @@ type alias Workspace =
     { desk : Desk
     , slipbox : Slipbox
     , scrap : Scrap
-    , archive : List Archived
+    , archive : Archive
     , modified : Bool
     }
 
@@ -22,7 +22,7 @@ encode workspace =
         [ ( "desk", Desk.encode workspace.desk )
         , ( "slipbox", Slipbox.encode workspace.slipbox )
         , ( "scrap", Scrap.encode workspace.scrap )
-        , ( "archive", Encode.list Archived.encode workspace.archive )
+        , ( "archive", Archive.encode workspace.archive)
         ]
 
 
@@ -31,7 +31,7 @@ decoder =
         (Decode.field "desk" Desk.decoder)
         (Decode.field "slipbox" Slipbox.decoder)
         (Decode.field "scrap" Scrap.decoder)
-        (Decode.field "archive" (Decode.list Archived.decoder))
+        (Decode.field "archive" Archive.decoder)
         (Decode.succeed False)
 
 
@@ -39,7 +39,7 @@ default timestamp =
     { desk = Desk.default
     , slipbox = Slipbox.default
     , scrap = Scrap.default timestamp
-    , archive = []
+    , archive = Archive.default
     , modified = False
     }
 
