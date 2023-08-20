@@ -95,3 +95,6 @@ toDesk card position zIndex =
     , zIndex = zIndex }
 
 matches card1 card2 = card1.created == card2.created
+
+cycleColour card =
+    { card | colour = Colour.cycle card.colour }

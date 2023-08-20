@@ -84,6 +84,24 @@ fromIntDefaultWhite int =
         Just colour -> colour
         Nothing -> White
 
+cycle : Colour -> Colour
+cycle colour =
+    colour
+    |> toInt
+    |> (+) 1
+    |> modBy 10
+    |> fromIntDefaultWhite
+
+cycleMaybe : Maybe Colour -> Maybe Colour
+cycleMaybe maybeColour =
+    case maybeColour of
+        Nothing ->
+            Just White
+        Just Violet ->
+            Nothing
+        Just c ->
+            Just <| cycle c
+
 encode colour =
     Encode.int (toInt colour)
 

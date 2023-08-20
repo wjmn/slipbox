@@ -11,7 +11,7 @@
 
 * {
   box-sizing: border-box;
-  font-family: Iosevka, monospace;
+  font-family: Sudo, Iosevka, monospace;
 }
 
 button {
@@ -45,16 +45,16 @@ height: 100vh;
 }
 
 .main-panel.left {
-width: 20%;
+width: 420px;
 border-right: 1px solid #292524;
 }
 
 .main-panel.middle {
-width: 40%;
+  flex: 1;
 }
 
 .main-panel.right {
-width: 40%;
+width: 740px;
 position: relative;
 overflow: hidden;
 border-left: 1px solid #292524;
@@ -89,37 +89,31 @@ flex-direction: column;
 
 .scrap {
   border: none;
-  font-size: 10pt;
+  font-size: 15px;
   flex: 1;
   width: 100%;
   height: 100%;
   resize: none;
   padding: 1rem;
   outline: none;
-  white-space: pre-wrap
+  white-space: pre-wrap;
+  background: #fffbeb;
 }
 
 .desk {
 width: 100%;
-height: 100vh;
-position: absolute;
-top: 0;
-left: 0;
+flex: 1;
 }
 
 #desk {
-height: 100vh;
+  flex: 1;
 }
 
-.scrap {
-  background: #fffbeb;
-  font-size: 11pt;
-}
 
 .card, #current-editing-card-textarea {
   white-space: pre-wrap;
-  font-size: 10pt;
-  line-height: 1.2;
+  font-size: 13px;
+  line-height: 1;
   background: #fffbeb;
   border: 1px solid #a5f3fc;
   overflow: hidden;
@@ -129,11 +123,38 @@ height: 100vh;
   background: #fffbeb;
   cursor: normal;
   cursor: default;
+  display: flex;
+  flex-direction: column;
+}
+
+.colour-pin {
+  padding-right: 2px;
+  cursor: pointer;
+  z-index: 100;
+}
+
+.colour-pin:hover {
+  font-size: 18px;
+}
+
+.archived .colour-pin:hover {
+  font-size: inherit;
+  cursor: default;
+}
+
+.card-header {
+  font-size: 10px;
+  height: 10px;
+  display: flex;
+  padding: 1px;
+  justify-content: flex-end;
+  /*  background: #fef3c7; */
 }
 
 .card-content, #current-editing-card-textarea {
   color: #1c1917;
-  padding: 0.7rem;
+  padding: 0rem 0.6rem 0.6rem 0.6rem;
+  flex: 1;
 }
 
 .card .card-content::first-line {
@@ -165,20 +186,80 @@ outline: none;
 
 .slipbox-container {
   height: 100%;
-  overflow-y: auto;
   width: 360px;
   margin: 0 auto;
   padding: 20px;
 }
 
 .slipbox-cards {
+  margin-top: 0.5rem;
   position: relative;
   height: 100%;
 }
 
 .card.in-slipbox {
   position: absolute;
-  box-shadow: 0 0 2px 0px #155e75;
+  box-shadow: 0 0 4px 0px #155e75;
+}
+
+.card.in-slipbox:hover {
+  margin-top: -1rem;
+}
+
+.card.in-slipbox .colour-pin {
+  z-index: inherit;
+}
+
+span.search-match {
+  color: red !important;
+}
+
+.middle-bar {
+  width: 100%;
+  display: flex;
+}
+
+.colour-filter-button {
+  background: #67e8f9;
+  padding: 0 0.25rem;
+}
+
+.search-string-input, .archive-search {
+  flex: 1;
+  width: 100%;
+  background: #cffafe;
+  border: none;
+  padding: 2px;
+  margin: none;
+  text-align: right;
+  outline: none;
+}
+
+.arrangement-name-input {
+  width: 50%;
+  background: inherit;
+  border: none;
+  outline: none;
+}
+
+.arrangement-buttons {
+  flex: 1;
+  padding: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.arrangement-buttons button {
+  max-width: 4rem;
+  overflow: hidden;
+}
+
+.arrangement-buttons button:hover {
+  max-width: none;
+}
+
+.search-order-button {
+  background: #67e8f9;
 }
 
 .archive-view {
@@ -215,20 +296,51 @@ outline: none;
 .archived.scrap {
   width: 320px;
   height: 240px;
+  padding: 0.5rem;
   background: #f5f5f4;
-  font-size: 7pt;
+  font-size: 11px;
   overflow: auto;
 }
 
 .archived.scrap:hover {
   width: 100%;
   height: 100%;
-  font-size: 9pt;
+  font-size: 15px;
   grid-column: auto / span 2;
   grid-row: auto / span 2;
 }
 
+.archive-search {
+  text-align: left;
+}
 
+@media only screen and (max-width: 1200px) {
+  .left.main-panel {
+    width: 0.5rem;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background:  #cffafe;
+    border-right: 2px solid  #cffafe;
+  }
+
+  .left.main-panel:hover {
+    width: 380px;
+    background: #78716c;
+  }
+
+  .right.main-panel {
+    width: 660px;
+  }
+
+  .scrap {
+    padding: 0.5rem;
+    padding-left: 1rem;
+    font-size: 12px;
+  }
+}
 
 
 /* DEVELOPMENT STYLES FOR EASE OF VISUALISATION */

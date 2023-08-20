@@ -44,9 +44,21 @@ isEqualCard card item =
     case item.item of
         Archived.Card c ->
             c.created == card.created
-        Archived.Scrap _ ->
+        _ ->
+            False
+
+isEqualScrap scrap item =
+    case item.item of
+        Archived.Scrap s ->
+            s.created == scrap.created
+        _ ->
             False
 
 withoutCard : Card.InSlipbox -> Archive -> Archive
 withoutCard card archive =
     { archive | items = List.filter (isEqualCard card >> not) archive.items }
+
+
+withoutScrap: Scrap.Scrap -> Archive -> Archive
+withoutScrap scrap archive =
+    { archive | items = List.filter (isEqualScrap scrap >> not) archive.items }

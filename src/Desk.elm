@@ -37,3 +37,13 @@ withoutCard card desk =
     in
     { desk | cards =
           List.filter (\c -> c.created /= card.created) desk.cards |> List.map calibrateZ}
+
+modifyCard posix f desk =
+    let
+        fif c =
+            if posix == c.created then
+                f c
+            else
+                c
+    in
+    { desk | cards = List.map fif desk.cards }

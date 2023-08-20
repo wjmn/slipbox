@@ -41,3 +41,7 @@ distance a b =
 
 minus a b =
     { x = a.x - b.x, y = a.y - b.y }
+
+
+plus a b =
+    { x = a.x + b.x, y = a.y + b.y }

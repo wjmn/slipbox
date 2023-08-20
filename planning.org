@@ -5,36 +5,37 @@ AIM:
 2. Memory of physical location (canonical ordering) and physical state of cards (plaintext format only)
 
 Workflow:
-1. Open a workspace file (.json) or URL with workspace file in URL
-2. Work in workspace
-3. Save to workspace file (.json) - default to overwrite original filename
-4. Warn if will exit app before saving
+1. [X] Open a workspace file (.json) or URL with workspace file in URL
+2. [X] Work in workspace
+3. [X] Save to workspace file (.json)
+4. [ ] Default to overwrite original filename
+5. [X] Warn if will exit app before saving
 
 Work in workspace workflow:
-1. Create a card on canvas panel by clicking empty space
-2. Drag a card around the canvas
-3. Auto-arrange cards in grid (2 x 3 grid)
-4. Mark card (with a single coloured dot - 1 of 10 choices: white, grey, black, red, orange, yellow, green, blue, indigo, violet)
-5. Save workspace view under name
-6. Archive card
-7. Return card to slipbox
+1. [X] Create a card on canvas panel by clicking empty space
+2. [X] Drag a card around the canvas
+3. +Auto-arrange cards in grid (2 x 3 grid)+
+4. [X] Mark card (with a single coloured dot - 1 of 10 choices: white, grey, black, red, orange, yellow, green, blue, indigo, violet)
+5. [X] Save workspace view under name
+6. [X] Archive card
+7. [X] Return card to slipbox
 
 Work on scrap paper workflow: (main thing is to export to cards)
-1. Type on scrap paper
-2. Archive scrap paper
+1. [X] Type on scrap paper
+2. [X] Archive scrap paper
 
 Work in slipbox workflow:
-1. Sort by creation date (canonical)
-2. Sort by modified date
-3. Sort by colour (ordered by most recent) - black, grey, white, then ROYGBIV
-4. Filter by colours
-5. Fuzzy search bar
-6. Open, rearrange and delete saved views
+1. [X] Sort by creation date (canonical)
+2. [X] Sort by modified date
+3. [X] Sort by colour (ordered by most recent) - black, grey, white, then ROYGBIV
+4. [X] Filter by colours
+5. [X] Fuzzy search bar
+6. [X] Open and delete saved views
 
 Archive workflow:
-1. View archive as grid
-2. Fuzzy search archive
-3. Restore cards (but you can't restore scrap paper)
+1. [X] View archive as grid
+2. [X] Fuzzy search archive
+3. [X] Restore cards (but you can't restore scrap paper)
 
 
 Use really lightweight syntax. Just use human readable plain text as much as possible.
@@ -48,7 +49,3 @@ If width < certain threshold:
 Width of the cards should be scaled as a percentage of the canvas view width.
 
 
-* Roadmap
-
-Key features:
-- [ ]

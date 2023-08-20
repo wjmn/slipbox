@@ -6,6 +6,7 @@ import Colour exposing (Colour)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Set exposing (Set)
+import Time exposing (posixToMillis)
 
 
 type SortOrder
@@ -15,6 +16,7 @@ type SortOrder
     | SortByModifiedDateRecentLast
     | SortByColour
     | SortByColourReversed
+
 
 
 type alias Slipbox =
@@ -70,6 +72,33 @@ intToSortOrder int =
         _ ->
             SortByCreationDateRecentFirst
 
+sortOrderToString order =
+    case order of
+        SortByCreationDateRecentFirst ->
+            "Created first"
+
+        SortByCreationDateRecentLast ->
+            "Created last"
+
+        SortByModifiedDateRecentFirst ->
+            "First modified"
+
+        SortByModifiedDateRecentLast ->
+            "Last modified"
+
+        SortByColour ->
+            "Colour"
+
+        SortByColourReversed ->
+            "Colour reverse"
+
+
+
+cycleIndividualSortOrder sortOrder =
+    sortOrderToInt sortOrder
+    |> (\x -> x + 1)
+    |> modBy 6
+    |> intToSortOrder
 
 encode slipbox =
     Encode.object
@@ -103,3 +132,33 @@ withCard card now slipbox =
 withoutCard card slipbox =
     { slipbox | cards =
           List.filter (\c -> c.created /= card.created) slipbox.cards }
+
+cycleSortOrder slipbox =
+    { slipbox | sortOrder = cycleIndividualSortOrder slipbox.sortOrder }
+
+viewBySortOrder slipbox =
+    let
+        sort =
+            case slipbox.sortOrder of
+                SortByCreationDateRecentFirst ->
+                    List.sortBy (.created >> posixToMillis)
+
+                SortByCreationDateRecentLast ->
+                    List.sortBy (.created >> posixToMillis) >> List.reverse
+
+                SortByModifiedDateRecentFirst ->
+                    List.sortBy (.modified >> posixToMillis)
+
+                SortByModifiedDateRecentLast ->
+                    List.sortBy (.modified >> posixToMillis) >> List.reverse
+
+                SortByColour ->
+                    List.sortBy (.colour >> Colour.toInt)
+
+                SortByColourReversed ->
+                    List.sortBy (.colour >> Colour.toInt)  >> List.reverse
+    in
+        sort slipbox.cards
+
+filterByColour colour slipbox =
+    { slipbox | cards = List.filter (\c -> c.colour == colour) slipbox.cards }
