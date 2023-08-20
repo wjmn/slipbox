@@ -11,7 +11,7 @@
 
 * {
   box-sizing: border-box;
-  font-family: Sudo, Iosevka, monospace;
+  font-family: Sudo, Iosevka, Consolas, Fira Code, Monaco, monospace;
 }
 
 button {
@@ -333,13 +333,13 @@ span.search-match {
   }
 
   .right.main-panel {
-    width: 660px;
+    width: 460px;
   }
 
   .scrap {
     padding: 0.5rem;
     padding-left: 1rem;
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 
