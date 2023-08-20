@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/slipbox/favicon.svg"
   },
   {
-    "revision": "d5d7b87b26bcc7a4e375c7f1c823cec6",
+    "revision": "1766cd6d67487033bf2fc77b4075a6c4",
     "url": "/slipbox/index.html"
   },
   {
@@ -16,12 +16,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/slipbox/manifest.json"
   },
   {
-    "revision": "497e33ec1e522bd2768e",
-    "url": "/slipbox/static/css/main.59376788.chunk.css"
+    "revision": "e325b576b1931454a90b",
+    "url": "/slipbox/static/css/main.56fe4735.chunk.css"
   },
   {
-    "revision": "497e33ec1e522bd2768e",
-    "url": "/slipbox/static/js/main.497e33ec.chunk.js"
+    "revision": "e325b576b1931454a90b",
+    "url": "/slipbox/static/js/main.e325b576.chunk.js"
   },
   {
     "revision": "21cee92e5f9b6692d736",
