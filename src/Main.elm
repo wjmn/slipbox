@@ -5,6 +5,7 @@ import Archived
 import Arrangement exposing (Arrangement)
 import Browser
 import Browser.Dom as Dom
+import Browser.Events exposing (onResize)
 import Card
 import Colour exposing (Colour)
 import Desk
@@ -24,7 +25,6 @@ import Slipbox
 import Task
 import Time exposing (Posix, posixToMillis)
 import Workspace exposing (..)
-import Browser.Events exposing (onResize)
 
 
 
@@ -261,14 +261,15 @@ inMain model f =
             model
 
 
-
 inArchive : Model -> (DataArchive -> DataArchive) -> Model
 inArchive model f =
     case model of
         StateArchive data a ->
             StateArchive data (f a)
+
         _ ->
             model
+
 
 fromMain : Model -> (DataMain -> a) -> Maybe a
 fromMain model f =
@@ -372,10 +373,12 @@ withColourFilter colour model =
     (\d -> { d | colourFilter = colour })
         |> inMain model
 
+
 withArchiveSearch : String -> Model -> Model
 withArchiveSearch string model =
     (\d -> { d | search = string })
         |> inArchive model
+
 
 onDataMainOf : Model -> (DataMain -> Cmd Msg) -> Cmd Msg
 onDataMainOf model f =
@@ -401,6 +404,7 @@ update msg model =
         GotStartupTimestamp posix ->
             makeInitialState posix
                 |> withCmd (Task.attempt GotDeskBoundingRect (Dom.getElement "desk"))
+
         OnWindowResize _ _ ->
             model
                 |> withCmd (Task.attempt GotDeskBoundingRect (Dom.getElement "desk"))
@@ -668,8 +672,8 @@ update msg model =
 
         ChangedArchiveSearch string ->
             model
-            |> withArchiveSearch string
-            |> withCmd Cmd.none
+                |> withArchiveSearch string
+                |> withCmd Cmd.none
 
         ClickedCycleCardColour posix ->
             case .currentEditingCard |> fromMain model of
@@ -779,7 +783,7 @@ viewColourPin card =
 
 
 cardHeader card =
-    div [ class "card-header", preventDefaultOn "mousedown" (Decode.succeed (NoOp, True)) ]
+    div [ class "card-header", preventDefaultOn "mousedown" (Decode.succeed ( NoOp, True )) ]
         [ viewColourPin card ]
 
 
@@ -871,10 +875,12 @@ viewCardsOnDesk data =
         [ class "desk-cards" ]
         (viewDragging :: viewEditing :: List.map viewCard data.workspace.desk.cards)
 
+
 matchingChars matches =
     matches
         |> List.concatMap (\m -> List.map (\x -> x + m.offset) m.keys)
         |> Set.fromList
+
 
 segment matchSet chars =
     let
@@ -898,9 +904,10 @@ segment matchSet chars =
     loop ( [], True ) [] enumerated
 
 
-matchToMarkedHtml card matches =
+matchToMarkedHtml card m =
     let
-        matchSet = matchingChars matches
+        matchSet =
+            matchingChars m.matches
     in
     String.toList card.content
         |> segment matchSet
@@ -912,7 +919,7 @@ matchToMarkedHtml card matches =
                 else
                     text string
             )
-        |> (\x -> ( card, x ))
+        |> (\x -> ( card, x, m.score ))
 
 
 viewSlipboxCards : DataMain -> Html Msg
@@ -924,15 +931,15 @@ viewSlipboxCards data =
         styleCardHeight =
             style "height" <| String.fromFloat cardHeight ++ "px"
 
-        styleCardTop index =
-            style "top" <| String.fromInt (40 * index) ++ "px"
+        styleZ index =
+            style "z-index" <| String.fromInt index
 
-        viewCard index ( card, cardContentHtml ) =
+        viewCard index ( card, cardContentHtml, score ) =
             div
-                [ class "card in-slipbox"
+                [ classList [ ( "in-slipbox", True ), ( "card", True ), ( "perfect-score", score == 0 ) ]
                 , styleCardWidth
                 , styleCardHeight
-                , styleCardTop index
+                , styleZ index
                 , onClick (ClickedSlipboxCard card)
                 ]
                 [ cardHeader card
@@ -951,12 +958,12 @@ viewSlipboxCards data =
             case data.slipboxSearch of
                 "" ->
                     Slipbox.viewBySortOrder filtered
-                        |> List.map (\c -> ( c, [ text c.content ] ))
+                        |> List.map (\c -> ( c, [ text c.content ], -1 ))
 
                 search ->
                     List.map (\c -> ( c, Fuzzy.match [] [ " ", "\n", "." ] (String.toLower search) (String.toLower c.content) )) filtered.cards
                         |> List.sortBy (\( c, m ) -> m.score)
-                        |> List.map (\( c, m ) -> matchToMarkedHtml c m.matches)
+                        |> List.map (\( c, m ) -> matchToMarkedHtml c m)
     in
     div [ class "slipbox-cards" ]
         (List.indexedMap viewCard orderedCards)
@@ -980,6 +987,7 @@ viewMainLeft data =
         colourModified =
             if data.workspace.modified then
                 style "color" "red"
+
             else
                 style "color" "inherit"
     in
@@ -996,8 +1004,10 @@ viewMainLeft data =
             , button [ class "search-order-button", onClick ClickedCycleSortOrder ] [ text <| Slipbox.sortOrderToString data.workspace.slipbox.sortOrder ]
             , input [ class "search-string-input", type_ "text", onInput ChangedSlipboxSearch, value data.slipboxSearch ] []
             ]
-        , div [ class "slipbox-container" ]
-            [ viewSlipboxCards data ]
+        , div [ class "slipbox-view-container" ]
+            [ div [ class "slipbox-container" ]
+                [ viewSlipboxCards data ]
+            ]
         ]
 
 
@@ -1068,11 +1078,11 @@ viewArchive data a =
         styleCardHeight =
             style "height" <| String.fromFloat cardHeight ++ "px"
 
-        viewArchiveItem (item, contentHtml) =
+        viewArchiveItem ( item, contentHtml, score ) =
             case item.item of
                 Archived.Card card ->
                     div
-                        [ class "archived card"
+                        [ classList [ ( "archived", True ), ( "card", True ), ( "perfect-score", score == 0 ) ]
                         , styleCardWidth
                         , styleCardHeight
                         ]
@@ -1086,7 +1096,7 @@ viewArchive data a =
 
                 Archived.Scrap scrap ->
                     div
-                        [ class "archived scrap"
+                        [ classList [ ( "archived", True ), ( "scrap", True ), ( "perfect-score", score == 0 ) ]
                         , preventDefaultOn "mouseup" (decoderClickedArchived (ClickedScrapInArchive scrap))
                         ]
                         [ div [] contentHtml ]
@@ -1095,6 +1105,7 @@ viewArchive data a =
             case item.item of
                 Archived.Card card ->
                     card.content
+
                 Archived.Scrap scrap ->
                     scrap.content
 
@@ -1102,22 +1113,22 @@ viewArchive data a =
             case item.item of
                 Archived.Card card ->
                     matchToMarkedHtml card matches
-                    |> (\ (c, h) -> ({ item = Archived.Card c}, h))
+                        |> (\( c, h, sc ) -> ( { item = Archived.Card c }, h, sc ))
+
                 Archived.Scrap scrap ->
                     matchToMarkedHtml scrap matches
-                    |> (\ (s, h) -> ({ item = Archived.Scrap s}, h))
+                        |> (\( s, h, sc ) -> ( { item = Archived.Scrap s }, h, sc ))
 
         ordered =
             case a.search of
                 "" ->
-                    List.map (\x -> viewArchiveItem (x, [text <| defaultContent x])) data.workspace.archive.items
+                    List.map (\x -> viewArchiveItem ( x, [ text <| defaultContent x ], -1 )) data.workspace.archive.items
 
                 search ->
                     List.map (\c -> ( c, Fuzzy.match [] [ " ", ".", "\n" ] (String.toLower search) (String.toLower <| defaultContent c) )) data.workspace.archive.items
                         |> List.sortBy (\( c, m ) -> m.score)
-                        |> List.map (\( c, m ) -> toMarkedHtml c m.matches)
+                        |> List.map (\( c, m ) -> toMarkedHtml c m)
                         |> List.map viewArchiveItem
-
     in
     div
         [ class "archive-grid" ]
@@ -1149,7 +1160,8 @@ viewCase model =
             div [ class "archive-view" ]
                 [ div [ class "top-bar" ]
                     [ button [ onClick ClickedViewMain ] [ text "View Main" ]
-                    , input [onInput ChangedArchiveSearch, class "archive-search", type_ "text", value a.search] []]
+                    , input [ onInput ChangedArchiveSearch, class "archive-search", type_ "text", value a.search ] []
+                    ]
                 , div [ class "archive-grid-container" ] [ viewArchive data a ]
                 ]
 
@@ -1183,5 +1195,5 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions =  always (onResize OnWindowResize)
+        , subscriptions = always (onResize OnWindowResize)
         }

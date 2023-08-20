@@ -185,11 +185,16 @@ outline: none;
   color: black;
 }
 
-.slipbox-container {
+.slipbox-view-container {
   height: 100%;
-  width: 360px;
+  overflow-y: auto;
+}
+
+.slipbox-container {
   margin: 0 auto;
   padding: 20px;
+  padding-bottom: 1.5rem;
+  width: 360px;
 }
 
 .slipbox-cards {
@@ -199,12 +204,13 @@ outline: none;
 }
 
 .card.in-slipbox {
-  position: absolute;
-  box-shadow: 0 0 4px 0px #155e75;
+  margin-bottom: -200px;
+  position: relative;
+  border-width: 2px;
 }
 
 .card.in-slipbox:hover {
-  margin-top: -1rem;
+  margin-bottom: 0px;
 }
 
 .card.in-slipbox .colour-pin {
@@ -294,6 +300,10 @@ span.search-match {
   margin: 0.5rem;
 }
 
+.archived.card {
+  border: 2px solid #a5f3fc;
+}
+
 .archived.scrap {
   width: 320px;
   height: 240px;
@@ -301,6 +311,7 @@ span.search-match {
   background: #f5f5f4;
   font-size: 11px;
   overflow: auto;
+  border: 2px solid #a5f3fc;
 }
 
 .archived.scrap:hover {
@@ -313,6 +324,14 @@ span.search-match {
 
 .archive-search {
   text-align: left;
+}
+
+.card.in-slipbox.perfect-score {
+  margin-bottom: 0.5rem;
+}
+
+.perfect-score {
+  border: 2px solid red !important;
 }
 
 @media only screen and (max-width: 1200px) {
