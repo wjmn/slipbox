@@ -47,3 +47,10 @@ modifyCard posix f desk =
                 c
     in
     { desk | cards = List.map fif desk.cards }
+
+reclipPositions clipper desk =
+    let
+        clipCardPos card =
+            { card | position = clipper card.position }
+    in
+    { desk | cards = List.map clipCardPos desk.cards}

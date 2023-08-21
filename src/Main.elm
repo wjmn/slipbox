@@ -412,7 +412,8 @@ update msg model =
         GotDeskBoundingRect element ->
             case element of
                 Ok el ->
-                    model
+                    Workspace.modifyDesk (Desk.reclipPositions (clipPosition el.element))
+                        |> inWorkspaceOf model
                         |> withDeskBoundingRect el.element
                         |> withCmd Cmd.none
 
