@@ -1,7 +1,7 @@
 {
-  "main.css": "/slipbox/static/css/main.40bb4f61.chunk.css",
-  "main.js": "/slipbox/static/js/main.71310606.chunk.js",
-  "main.js.map": "/slipbox/static/js/main.71310606.chunk.js.map",
+  "main.css": "/slipbox/static/css/main.4dcb2ebd.chunk.css",
+  "main.js": "/slipbox/static/js/main.9c006ce9.chunk.js",
+  "main.js.map": "/slipbox/static/js/main.9c006ce9.chunk.js.map",
   "runtime~main.js": "/slipbox/static/js/runtime~main.21cee92e.js",
   "runtime~main.js.map": "/slipbox/static/js/runtime~main.21cee92e.js.map",
   "vendors~main.js": "/slipbox/static/js/vendors~main.b17b319b.chunk.js",
@@ -11,5 +11,5 @@
   "favicon.svg": "/slipbox/favicon.svg",
   "index.html": "/slipbox/index.html",
   "manifest.json": "/slipbox/manifest.json",
-  "precache-manifest.4f53ff4a30283c7313f8549d4ebcc6af.js": "/slipbox/precache-manifest.4f53ff4a30283c7313f8549d4ebcc6af.js"
+  "precache-manifest.8b453bea4f038a98ec6bc3bbcaa8972c.js": "/slipbox/precache-manifest.8b453bea4f038a98ec6bc3bbcaa8972c.js"
 }
