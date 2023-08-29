@@ -962,7 +962,7 @@ viewSlipboxCards data =
                         |> List.map (\c -> ( c, [ text c.content ], -1 ))
 
                 search ->
-                    List.map (\c -> ( c, Fuzzy.match [] [ " ", "\n", "." ] (String.toLower search) (String.toLower c.content) )) filtered.cards
+                    List.map (\c -> ( c, Fuzzy.match [] [ " " ] (String.toLower search) (String.toLower c.content) )) filtered.cards
                         |> List.sortBy (\( c, m ) -> m.score)
                         |> List.map (\( c, m ) -> matchToMarkedHtml c m)
     in
@@ -1126,10 +1126,9 @@ viewArchive data a =
                     List.map (\x -> viewArchiveItem ( x, [ text <| defaultContent x ], -1 )) data.workspace.archive.items
 
                 search ->
-                    List.map (\c -> ( c, Fuzzy.match [] [ " ", ".", "\n" ] (String.toLower search) (String.toLower <| defaultContent c) )) data.workspace.archive.items
+                    List.map (\c -> ( c, Fuzzy.match [] [" "] (String.toLower search) (String.toLower <| defaultContent c) )) data.workspace.archive.items
                         |> List.sortBy (\( c, m ) -> m.score)
-                        |> List.map (\( c, m ) -> toMarkedHtml c m)
-                        |> List.map viewArchiveItem
+                        |> List.map (\( c, m ) -> viewArchiveItem <| toMarkedHtml c m)
     in
     div
         [ class "archive-grid" ]
